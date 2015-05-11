@@ -1,9 +1,13 @@
 package com.example.tests;
 
 import android.test.ActivityInstrumentationTestCase2;
+import android.widget.Button;
+import android.widget.EditText;
 
 import com.example.informacion.Login;
+import com.example.informacion.R;
 import com.example.informacion.Usuario;
+import com.robotium.solo.Solo;
 
 public class LoginTest extends ActivityInstrumentationTestCase2<Login> {
 
@@ -33,6 +37,7 @@ public class LoginTest extends ActivityInstrumentationTestCase2<Login> {
 	 * a las funciones getter/setter de la clase Usuario
 	 */
 	
+	private Solo solo;
 	private Login login;
 	private Usuario usuario;
 
@@ -50,11 +55,15 @@ public class LoginTest extends ActivityInstrumentationTestCase2<Login> {
 	 protected void setUp() throws Exception {
 		 super.setUp();
 		 login = getActivity();
+		 usuario = new Usuario();
+		 solo = new Solo(getInstrumentation(), getActivity());
 	 }
 	
 	public void tearDown() throws Exception
 	{
 		super.tearDown();
+		if(solo != null)
+			solo.finishOpenedActivities();
 		login = null;
 	}
 	
@@ -139,5 +148,28 @@ public class LoginTest extends ActivityInstrumentationTestCase2<Login> {
 		assertEquals(usuario.getNombre(), "");
 		assertEquals(usuario.getContrasenya(), "");
 		assertEquals(result, false);
+	}
+	
+	public void testLoginOk()
+	{
+		usuario.setNombre("admin");
+		usuario.setContrasenya("12345");
+		
+		//Access First value (edit-filed) and putting firstNumber value in it
+		EditText entradaUsuario = (EditText) solo.getView(R.id.TxtUsuario);
+		solo.clearEditText(entradaUsuario);
+		solo.enterText(entradaUsuario, String.valueOf(usuario.getNombre()));
+		
+		//Access Second value (edit-filed) and putting SecondNumber value in it
+		EditText entradaPassword = (EditText) solo.getView(R.id.TxtPassword);
+		solo.clearEditText(entradaPassword);
+		solo.enterText(entradaPassword, String.valueOf(usuario.getContrasenya()));
+		
+		Button botonLogin = (Button)solo.getCurrentActivity().findViewById(R.id.BtnEntrar);
+		
+		//Click on button
+		solo.clickOnButton(botonLogin.getText().toString()); 
+		solo.waitForActivity("com.example.informacion.MainActivity", 3000);
+		solo.assertCurrentActivity("The activity should be MainActivity ", "MainActivity");
 	}
 }
